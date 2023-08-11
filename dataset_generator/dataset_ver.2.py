@@ -77,7 +77,7 @@ class CreateDataset:
                                                                                             self.Y_label, 
                                                                                             train_size=self.train_ratio, 
                                                                                             test_size=self.test_ratio)
-        if augmentation==True:
+        if augmentation == True:
             print("Executing data augmentation. Wait a moment...")
             augment = tf.keras.Sequential([
                 layers.RandomFlip("horizontal_and_vertical"),
@@ -93,10 +93,10 @@ class CreateDataset:
                       ncols=70) as augment_list:
                 
                 for index, img in augment_list:
-                    augmented_img = augmentation(img)
-                    augmented_label = copied_label([index])
+                    augmented_img = augment(img)
+                    augmented_label = copied_label[index]
                     self.train_img.append(augmented_img)
-                    self.test_img.apend(augmented_label)
+                    self.train_label.append(augmented_label)
 
             del copied_img, copied_label
 
@@ -113,9 +113,9 @@ class CreateDataset:
     
 
 
-def main():
-    train_path = None
-    extension = "*.JPG"
+def main(preview=True):
+    train_path = "/Users/taikisakai/Desktop/files/"
+    extension = "*.png"
     class_names = ["fatigue", "ductile", "brittle"]
 
     generator = CreateDataset(train_path, 
@@ -126,10 +126,28 @@ def main():
 
     #train_img, trainlabelをtensor型に変換する
     train_img_ds = tf.data.Dataset.from_tensor_slices(train_img)
-    train_label_ds = tf.data.Dataset.from_tensor_slices(tf.case(train_label, tf.int64))
+    train_label_ds = tf.data.Dataset.from_tensor_slices(tf.cast(train_label, tf.int64))
     dataset = tf.data.Dataset.zip((train_img_ds, train_label_ds)).shuffle(buffer_size=len(train_img))
     print(len(train_img))
-    
+
+    if preview == True:
+        iterator = iter(dataset)
+        
+        #iterのnextでエラー
+        #別のバージョンでは動作確認済み
+        plt.figure(figsize=(10, 10))
+        for i in range(25):
+            img, label = next(iterator)
+            plt.subplot(5, 5, i+1)
+            plt.xticks([])
+            plt.yticks([])
+            plt.grid(False)
+            plt.imshow(img)
+            plt.xlabel(class_names[int(label)])
+        plt.show()
+        
+    return dataset, test_img, test_label
+
 
 if __name__ == "__main__":
     main()
