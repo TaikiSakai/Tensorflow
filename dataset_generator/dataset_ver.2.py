@@ -33,7 +33,7 @@ class CreateDataset:
         self.test_ratio = test_ratio
 
         self.X_image = [] 
-        self.Y_image = []
+        self.Y_label = []
         self.train_img = []
         self.test_img =[]
         self.train_label = []
@@ -46,13 +46,90 @@ class CreateDataset:
 
 
     def data_import(self):
-        with tqdm(enumerate(class_names), 
+        with tqdm(enumerate(self.class_names), 
                   total=len(self.class_names), 
                   ncols=70, 
                   ascii=True) as X_train:
             
-            for index, img in X_train:
+            for index, name in X_train:
                 read_data = self.src + "//" + name
                 for file_path in glob.glob(os.path.join(read_data, self.extenion)):
+                    #print(file_path)
+                    if self.color_setting == 1:
+                        img = load_img(file_path, 
+                                       color_mode="grayscale", 
+                                       target_size=(self.img_size, self.img_size))
+                        
+                    #この時点ではarray配列
+                    array = img_to_array(img)
+                    self.X_image.append(array)
+                    self.Y_label.append([int(index)])
 
-                    sys.exit(0)
+                    #print(index)
+                    
+            print("All images have been imported correctly.")
+
+            return None
+        
+
+    def genrate_dataset(self, augmentation=True):
+        self.train_img, self.test_img, self.train_label, self.test_label = train_test_split(self.X_image, 
+                                                                                            self.Y_label, 
+                                                                                            train_size=self.train_ratio, 
+                                                                                            test_size=self.test_ratio)
+        if augmentation==True:
+            print("Executing data augmentation. Wait a moment...")
+            augment = tf.keras.Sequential([
+                layers.RandomFlip("horizontal_and_vertical"),
+                layers.RandomRotation(0.2)
+            ])
+
+            #train用データセットを拡張する
+            copied_img = copy.deepcopy(self.train_img)
+            copied_label = copy.deepcopy(self.train_label)
+            
+            with tqdm(enumerate(copied_img), 
+                      total=len(copied_img), 
+                      ncols=70) as augment_list:
+                
+                for index, img in augment_list:
+                    augmented_img = augmentation(img)
+                    augmented_label = copied_label([index])
+                    self.train_img.append(augmented_img)
+                    self.test_img.apend(augmented_label)
+
+            del copied_img, copied_label
+
+            self.train_img = np.array(self.train_img)
+            self.train_label = np.array(self.train_label)
+            self.test_img = np.array(self.test_img)
+            self.test_label = np.array(self.test_label)
+
+            #正規化
+            self.train_img = self.train_img.astype("float32") / 255
+            self.test_img = self.test_img.astype("float32") / 255
+
+        return self.train_img, self.test_img, self.train_label, self.test_label
+    
+
+
+def main():
+    train_path = None
+    extension = "*.JPG"
+    class_names = ["fatigue", "ductile", "brittle"]
+
+    generator = CreateDataset(train_path, 
+                              extension, 
+                              class_names, train_ratio=0.60, test_ratio=0.40)
+    generator.data_import()
+    train_img, test_img, train_label, test_label = generator.genrate_dataset(augmentation=True)
+
+    #train_img, trainlabelをtensor型に変換する
+    train_img_ds = tf.data.Dataset.from_tensor_slices(train_img)
+    train_label_ds = tf.data.Dataset.from_tensor_slices(tf.case(train_label, tf.int64))
+    dataset = tf.data.Dataset.zip((train_img_ds, train_label_ds)).shuffle(buffer_size=len(train_img))
+    print(len(train_img))
+    
+
+if __name__ == "__main__":
+    main()
