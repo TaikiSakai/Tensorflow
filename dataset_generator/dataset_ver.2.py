@@ -135,16 +135,24 @@ def main(preview=True):
         
         #iterのnextでエラー
         #別のバージョンでは動作確認済み
+        #iterのしようについては下記を参照
+        #https://www.nblog09.com/w/2019/01/12/python-has-next/
         plt.figure(figsize=(10, 10))
-        for i in range(25):
-            img, label = next(iterator)
-            plt.subplot(5, 5, i+1)
-            plt.xticks([])
-            plt.yticks([])
-            plt.grid(False)
-            plt.imshow(img)
-            plt.xlabel(class_names[int(label)])
-        plt.show()
+        #matplotlib.use('TkAgg')
+        try:
+            for i in range(25):
+                img, label = next(iterator)
+                plt.subplot(5, 5, i+1)
+                plt.xticks([])
+                plt.yticks([])
+                plt.grid(False)
+                plt.imshow(img)
+                plt.xlabel(class_names[int(label)])
+        
+        except StopIteration:
+            plt.show()
+
+        #plt.show()
         
     return dataset, test_img, test_label
 
