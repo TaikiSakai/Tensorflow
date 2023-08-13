@@ -1,18 +1,13 @@
+import sys, os
 
+import numpy as np
 import tensorflow as tf
-
 from tensorflow.keras import datasets, layers, models
 from keras.layers import Dropout
 import matplotlib.pyplot as plt
+from dataset_generator import generate_dataset as ds
 
-
-(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-
-# Normalize pixel values to be between 0 and 1
-train_images, test_images = train_images / 255.0, test_images / 255.0
-
-class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-               'dog', 'frog', 'horse', 'ship', 'truck']
+dataset, test_img, test_label = ds.main(preview=True)
 
 plt.figure(figsize=(10,10))
 for i in range(25):
