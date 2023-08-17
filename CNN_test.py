@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
 
-# Normalize pixel values to be between 0 and 1
+# Normalize pixel values to be between 0 and 
 train_images, test_images = train_images / 255.0, test_images / 255.0
 
 class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
