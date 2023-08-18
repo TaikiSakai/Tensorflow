@@ -1,6 +1,8 @@
 #Coding utf-8
 """
 dataset作成用プログラム
+data augmentationはオフラインなのでメモリを多く消費する可能性あり
+→オンラインのバージョンを開発
 """
 
 import os, sys
@@ -65,12 +67,15 @@ class CreateDataset:
                     self.X_image.append(array)
                     self.Y_label.append([int(index)])
 
-                    #print(index)
+            #print(self.X_image)
                     
             print("All images have been imported correctly.")
 
             return None
         
+    """
+    augmentation(データの拡張)を高速化する 2023/08/17
+    """
 
     def genrate_dataset(self, augmentation=True):
         self.train_img, self.test_img, self.train_label, self.test_label = train_test_split(self.X_image, 
@@ -80,25 +85,42 @@ class CreateDataset:
         if augmentation == True:
             print("Executing data augmentation. Wait a moment...")
             augment = tf.keras.Sequential([
+                #ここに拡張方法を記述する
                 layers.RandomFlip("horizontal_and_vertical"),
                 layers.RandomRotation(0.2)
+
             ])
 
             #train用データセットを拡張する
             copied_img = copy.deepcopy(self.train_img)
             copied_label = copy.deepcopy(self.train_label)
-            
+        #----------------------------------------------------------    
             with tqdm(enumerate(copied_img), 
                       total=len(copied_img), 
                       ncols=70) as augment_list:
                 
+                augmented = []
                 for index, img in augment_list:
-                    augmented_img = augment(img)
-                    augmented_label = copied_label[index]
-                    self.train_img.append(augmented_img)
-                    self.train_label.append(augmented_label)
-
+                    #1枚の画像を9枚に増やす
+                    for i in range(9):
+                        augmented_img = augment(img)
+                        augmented_label = copied_label[index]
+                        augmented.append(augmented_img)
+                        self.train_img.append(augmented_img)
+                        self.train_label.append(augmented_label)
+            
+            #拡張した画像を表示する
+            plt.figure(figsize=(10, 10))
+            for i, img in enumerate(augmented):
+                plt.subplot(10, 10, i+1)
+                plt.xticks([])
+                plt.yticks([])
+                plt.grid(False)
+                plt.imshow(img)
+            plt.show()
+            
             del copied_img, copied_label
+        #----------------------------------------------------------   
 
             self.train_img = np.array(self.train_img)
             self.train_label = np.array(self.train_label)
@@ -115,12 +137,12 @@ class CreateDataset:
 
 def main(preview=True):
     train_path = "/Users/taikisakai/Desktop/files/"
-    extension = "*.png"
+    extension = "*.jpg"
     class_names = ["fatigue", "ductile", "brittle"]
 
     generator = CreateDataset(train_path, 
                               extension, 
-                              class_names, train_ratio=0.60, test_ratio=0.40)
+                              class_names, train_ratio=0.70, test_ratio=0.30)
     generator.data_import()
     train_img, test_img, train_label, test_label = generator.genrate_dataset(augmentation=True)
 
@@ -138,7 +160,6 @@ def main(preview=True):
         #iterのしようについては下記を参照
         #https://www.nblog09.com/w/2019/01/12/python-has-next/
         plt.figure(figsize=(10, 10))
-        #matplotlib.use('TkAgg')
         try:
             for i in range(25):
                 img, label = next(iterator)
@@ -151,11 +172,9 @@ def main(preview=True):
         
         except StopIteration:
             plt.show()
-
-        #plt.show()
         
     return dataset, test_img, test_label
 
 
 if __name__ == "__main__":
-    main()
+    main(preview=True)
