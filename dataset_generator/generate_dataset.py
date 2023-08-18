@@ -73,9 +73,6 @@ class CreateDataset:
 
             return None
         
-    """
-    augmentation(データの拡張)を高速化する 2023/08/17
-    """
 
     def genrate_dataset(self, augmentation=True):
         self.train_img, self.test_img, self.train_label, self.test_label = train_test_split(self.X_image, 
@@ -94,7 +91,7 @@ class CreateDataset:
             #train用データセットを拡張する
             copied_img = copy.deepcopy(self.train_img)
             copied_label = copy.deepcopy(self.train_label)
-        #----------------------------------------------------------    
+  
             with tqdm(enumerate(copied_img), 
                       total=len(copied_img), 
                       ncols=70) as augment_list:
@@ -119,8 +116,7 @@ class CreateDataset:
                 plt.imshow(img)
             plt.show()
             
-            del copied_img, copied_label
-        #----------------------------------------------------------   
+            del copied_img, copied_label   
 
             self.train_img = np.array(self.train_img)
             self.train_label = np.array(self.train_label)
