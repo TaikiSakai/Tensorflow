@@ -87,7 +87,7 @@ class CreateDataset:
             augment = tf.keras.Sequential([
                 #ここに拡張方法を記述する
                 layers.RandomFlip("horizontal_and_vertical"),
-                layers.RandomRotation(0.2)
+                layers.RandomRotation(0.4)
 
             ])
 
@@ -134,7 +134,7 @@ class CreateDataset:
         return self.train_img, self.test_img, self.train_label, self.test_label
     
 
-
+#test
 def main(preview=True):
     train_path = "/Users/taikisakai/Desktop/files/"
     extension = "*.jpg"
@@ -154,7 +154,6 @@ def main(preview=True):
 
     if preview == True:
         iterator = iter(dataset)
-        
         #iterのnextでエラー
         #別のバージョンでは動作確認済み
         #iterのしようについては下記を参照
@@ -169,7 +168,10 @@ def main(preview=True):
                 plt.grid(False)
                 plt.imshow(img)
                 plt.xlabel(class_names[int(label)])
-        
+            plt.show()
+
+        #画像が25枚以下のときはstopiterationが発生するので例外処理が必要になる
+        #25枚以上存在する場合は、例外が発生する前にループが停止する
         except StopIteration:
             plt.show()
         
