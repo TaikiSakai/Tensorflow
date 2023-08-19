@@ -1,6 +1,6 @@
 #Coding utf-8
 """
-dataset作成用プログラム
+dataset作成用プログラム (オフライン)
 data augmentationはオフラインなのでメモリを多く消費する可能性あり
 →オンラインのバージョンを開発
 """
