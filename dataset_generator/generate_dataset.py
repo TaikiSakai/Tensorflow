@@ -170,7 +170,9 @@ def main(preview=True):
         #25枚以上存在する場合は、例外が発生する前にループが停止する
         except StopIteration:
             plt.show()
-        
+
+    print(dataset)
+    print(type(dataset))   
     return dataset, test_img, test_label
 
 
