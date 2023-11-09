@@ -6,6 +6,8 @@ from keras.layers import Dropout
 import matplotlib.pyplot as plt
 import sys
 
+#tessss
+
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
 
 # Normalize pixel values to be between 0 and 
